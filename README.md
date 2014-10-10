@@ -1,7 +1,7 @@
 go-crossfeed
 ============================
 
-Playing around with fgms stuff adn crossfeed for fun in golang
+Playing around with fgms stuff and crossfeed for fun in golang
 
 replay/
 -------------------
