@@ -58,6 +58,7 @@ func main() {
 	buffer := make([]byte, 4096) // file data buffer
 	data := make([]byte, 0) // working buffer
 	read_counter := 0 // count no of reads for dev debug
+	packets := 0
 
 	Fb := byte('F') // F,G,S as a byte (later maybe we can compare all four chars
 	Gb := byte('G')
@@ -98,10 +99,11 @@ func main() {
 				if errw != nil {
 					logger.Println(errw)
 				}
+				packets += 1
 				packet_start = i
 			}
 		}
-		time.Sleep(1)
+		time.Sleep(55 * time.Millisecond)
 
 		if read_counter % 2000 == 0{
 			fmt.Print(read_counter, " ")
