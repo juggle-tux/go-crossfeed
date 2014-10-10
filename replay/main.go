@@ -4,13 +4,14 @@ package main
 
 
 import (
-	//"bytes"
+	"bytes"
 	"fmt"
 	"flag"
 	"io"
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 
@@ -54,37 +55,52 @@ func main() {
 	}
 
 	// setup loop buffers _ vars
-	data := make([]byte, 1024) // file data buffer
-	counter := 0 // count no of reads for dev debug
+	buffer := make([]byte, 4096) // file data buffer
+	data := make([]byte, 0) // working buffer
+	read_counter := 0 // count no of reads for dev debug
 
-	Fb := byte('F') // F,G,S as a byte (later maybe we can copare all four chars
+	Fb := byte('F') // F,G,S as a byte (later maybe we can compare all four chars
 	Gb := byte('G')
 	Sb := byte('S')
+	magic := []byte("SFGF")
 
 	// loop forever, currently till eof or intentional crash
 	for {
 
 		// read from cf.log file and check for errors
-		n, err := file.Read(data)
+		n, err := file.Read(buffer)
 		if err != nil {
 			if err == io.EOF {
 				logger.Println("EOF: ", err)
 				return
 			}
 		}
-		counter += 1
+		read_counter += 1
+		fmt.Println("-----------------------", read_counter, time.Now().UTC())
 
-		// loop the buffer and detect the 'SFGF'
-		last := n - 4
-		for i := 0; i < last; i++ {
+		// append the buffer to existing data ([] at first loop)
+		data = append(data, buffer[:n]...)
 
-			if data[i + 0] == Sb && data[i + 1] == Fb  && data[i + 2] == Gb  && data[i + 3] == Fb  {
-				fmt.Println("YES found FGFS", counter,  i)
-				// TODO
-				conn.Write(data) // Write to UDP
+		// find first and last magic (first should always be zero
+		first := bytes.Index(data, magic)
+		last := bytes.LastIndex(data, magic)
+
+		// hack off the `bits` within first to last
+		bits := data[first: last - 1]
+
+		// hackoff data, leaving remainded
+		data = data[last:]
+
+		packet_start := 0
+		for i := 4; i < len(bits) - 4; i++ {
+			if bits[i + 0] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
+				conn.Write( bits[packet_start:i-1] )
+				packet_start = i
 			}
 		}
-		if counter == 10 {
+
+
+		if read_counter == 2000 {
 			fmt.Println("Killed after a few")
 			os.Exit(0)
 		}
