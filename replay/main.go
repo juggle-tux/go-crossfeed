@@ -87,7 +87,7 @@ func main() {
 		last := bytes.LastIndex(data, magic)
 
 		// hack off the `bits` within first to last
-		bits := data[first: last - 1]
+		bits := data[first : last - 1]
 
 		// hackoff data, leaving remainder
 		data = data[last:]
