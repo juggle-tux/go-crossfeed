@@ -7,6 +7,7 @@ import (
 	//"bytes"
 	"fmt"
 	"flag"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -42,17 +43,6 @@ func main() {
 		return
 	}
 
-	// Create UDP connection
-	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	_, err_conn := net.Dial("udp", addr_str )
-	if err_conn != nil {
-		logger.Println("Fail Conn", err_conn)
-		return
-	}
-
-	// Lets go
-	logger.Println("Starting with port: ",  addr_str, "  Log: ", *ifile)
-
 	// Open cf.log file
 	file, err_open := os.Open(*ifile)
 	if err_open != nil {
@@ -61,33 +51,44 @@ func main() {
 	}
 	defer file.Close()
 
-	// setup buffers
-	data := make([]byte, 256)
+	// Create UDP connection
+	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
+	conn, err_conn := net.Dial("udp", addr_str )
+	if err_conn != nil {
+		logger.Println("Fail UDP Connection", err_conn)
+		return
+	}
+
+
+	// setup loop buffers _ vars
+	data := make([]byte, 1024)
 	counter := 0
+
+	Fb := byte('F')
+	Gb := byte('G')
+	Sb := byte('S')
+
 	for {
-		//data = data[:cap(data)]
 		n, err := file.Read(data)
 		if err != nil {
-			//if err == io.EOF {
+			if err == io.EOF {
 				logger.Println("EOF: ", err)
 				return
-			//}
+			}
 		}
 		counter += 1
-		//data = data[:n]
-		logger.Println(counter, n, len(data), cap(data) )
-		for i := 4; i < n; i++ {
-			fmt.Print (data[i])
-			if data[i + 0] == 'F' {
-				fmt.Println(i, data[i+0], data[i+0] == 'F', 'F')
-			}
-			if data[i + 0] == 'S' && data[i + 1] == 'F'  && data[i + 2] == 'G'  && data[i + 3] == 'S'  {
-				fmt.Print("YESSSSSSSSSS")
 
+		for i := 0; i < n; i++ {
+
+			if data[i + 0] == Sb && data[i + 1] == Fb  && data[i + 2] == Gb  && data[i + 3] == Fb  {
+				fmt.Println("YES found FGFS", counter,  i)
+
+				// TODO
+				conn.Write(data) // Write to UDP
 			}
 		}
-		if counter == 2 {
-			fmt.Println("Killed")
+		if counter == 10 {
+			fmt.Println("Killed after a few")
 			os.Exit(0)
 		}
 	}
