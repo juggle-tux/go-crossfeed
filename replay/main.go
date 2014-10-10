@@ -93,7 +93,7 @@ func main() {
 
 		packet_start := 0
 		for i := 4; i < len(bits) - 4; i++ {
-			if bits[i ] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
+			if bits[i] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
 				_, errw := conn.Write( bits[packet_start:i] )
 				if errw != nil {
 					logger.Println(errw)
