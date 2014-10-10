@@ -77,11 +77,19 @@ func main() {
 		//data = data[:n]
 		logger.Println(counter, n, len(data), cap(data) )
 		for i := 4; i < n; i++ {
+			fmt.Print (data[i])
+			if data[i + 0] == 'F' {
+				fmt.Println(i, data[i+0], data[i+0] == 'F', 'F')
+			}
 			if data[i + 0] == 'S' && data[i + 1] == 'F'  && data[i + 2] == 'G'  && data[i + 3] == 'S'  {
 				fmt.Print("YESSSSSSSSSS")
+
 			}
 		}
-
+		if counter == 2 {
+			fmt.Println("Killed")
+			os.Exit(0)
+		}
 	}
 
 	fmt.Println("Done bye !")
