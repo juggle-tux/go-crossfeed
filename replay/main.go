@@ -11,13 +11,7 @@ import (
 	"log"
 	"net"
 	"os"
-
 )
-
-type Connection struct {
-	ClientAddr *net.UDPAddr // Address of the client
-	ServerConn *net.UDPConn // UDP connection to server
-}
 
 
 
@@ -59,16 +53,18 @@ func main() {
 		return
 	}
 
-
 	// setup loop buffers _ vars
-	data := make([]byte, 1024)
-	counter := 0
+	data := make([]byte, 1024) // file data buffer
+	counter := 0 // count no of reads for dev debug
 
-	Fb := byte('F')
+	Fb := byte('F') // F,G,S as a byte (later maybe we can copare all four chars
 	Gb := byte('G')
 	Sb := byte('S')
 
+	// loop forever, currently till eof or intentional crash
 	for {
+
+		// read from cf.log file and check for errors
 		n, err := file.Read(data)
 		if err != nil {
 			if err == io.EOF {
@@ -78,11 +74,12 @@ func main() {
 		}
 		counter += 1
 
-		for i := 0; i < n; i++ {
+		// loop the buffer and detect the 'SFGF'
+		last := n - 4
+		for i := 0; i < last; i++ {
 
 			if data[i + 0] == Sb && data[i + 1] == Fb  && data[i + 2] == Gb  && data[i + 3] == Fb  {
 				fmt.Println("YES found FGFS", counter,  i)
-
 				// TODO
 				conn.Write(data) // Write to UDP
 			}
