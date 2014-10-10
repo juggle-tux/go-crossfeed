@@ -20,7 +20,7 @@ func main() {
 
 	//= Command Args"
 	var ihelp *bool = flag.Bool("h", false, "Show Help")
-	var iport *int = flag.Int("p", 4444, "UDP Transmit port")
+	var iport *int = flag.Int("p", 3333, "UDP Transmit port")
 	var ifile *string = flag.String("l", "./cf_raw.log", "Path to raw log file")
 
 	flag.Parse()
@@ -48,12 +48,12 @@ func main() {
 
 	// Create UDP connection
 	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	conn, err_conn := net.Dial("udp", addr_str )
+	conn, err_conn := net.Dial("udp4", addr_str )
 	if err_conn != nil {
 		logger.Println("Fail UDP Connection", err_conn)
 		return
 	}
-
+	logger.Println("UDP Conn", addr_str)
 	// setup loop buffers _ vars
 	buffer := make([]byte, 4096) // file data buffer
 	data := make([]byte, 0) // working buffer
@@ -76,7 +76,7 @@ func main() {
 			}
 		}
 		read_counter += 1
-		fmt.Println("-----------------------", read_counter, time.Now().UTC())
+		//fmt.Println("-----------------------", read_counter, time.Now().UTC())
 
 		// append the buffer to existing data ([] at first loop)
 		data = append(data, buffer[:n]...)
@@ -88,21 +88,24 @@ func main() {
 		// hack off the `bits` within first to last
 		bits := data[first: last - 1]
 
-		// hackoff data, leaving remainded
+		// hackoff data, leaving remainder
 		data = data[last:]
 
 		packet_start := 0
 		for i := 4; i < len(bits) - 4; i++ {
-			if bits[i + 0] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
-				conn.Write( bits[packet_start:i-1] )
+			if bits[i ] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
+				_, errw := conn.Write( bits[packet_start:i] )
+				if errw != nil {
+					logger.Println(errw)
+				}
 				packet_start = i
 			}
 		}
+		time.Sleep(1)
 
-
-		if read_counter == 2000 {
-			fmt.Println("Killed after a few")
-			os.Exit(0)
+		if read_counter % 2000 == 0{
+			fmt.Print(read_counter, " ")
+			//os.Exit(0)
 		}
 	}
 
