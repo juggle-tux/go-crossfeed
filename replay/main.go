@@ -25,21 +25,19 @@ so maybe there isa  better way..
 
 Needs to "transmit" at 10 - 25 hz per packet
 
- */
+*/
 package main
-
 
 import (
 	"bytes"
-	"fmt"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
 	"time"
 )
-
 
 func main() {
 
@@ -73,18 +71,17 @@ func main() {
 
 	// Create UDP socket
 	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	conn, err_conn := net.Dial("udp4", addr_str )
+	conn, err_conn := net.Dial("udp4", addr_str)
 	if err_conn != nil {
 		logger.Println("Fail UDP Connection", err_conn)
 		return
 	}
 
-
 	// setup buffers +  vars
 	buffer := make([]byte, 4096) // file data buffer
 	data := make([]byte, 0)      // temp buffer
-	read_counter := 0 // count no of reads for dev debug
-	packets := 0     // packets processed
+	read_counter := 0            // count no of reads for dev debug
+	packets := 0                 // packets processed
 
 	// magic
 	Fb := byte('F') // F,G,S as a bytes (later maybe we can compare all four chars)
@@ -117,16 +114,17 @@ func main() {
 		last := bytes.LastIndex(data, magic)
 
 		// hack off the `bits` within first to last
-		bits := data[first : last - 1]
+		bits := data[first : last-1]
 
 		// hackoff data, leaving remainder
 		data = data[last:]
 
 		// loops the bits, finding magic
 		packet_start := 0
-		for i := 4; i < len(bits) - 4; i++ {
-			if bits[i] == Sb && bits[i + 1] == Fb  && bits[i + 2] == Gb  && bits[i + 3] == Fb  {
-				_, errw := conn.Write( bits[packet_start:i] )
+		for i := 4; i < len(bits)-4; i++ {
+			// There must be a better way !!
+			if bits[i] == Sb && bits[i+1] == Fb && bits[i+2] == Gb && bits[i+3] == Fb {
+				_, errw := conn.Write(bits[packet_start:i])
 				if errw != nil {
 					logger.Println(errw)
 				}
@@ -137,7 +135,7 @@ func main() {
 		// hack for now, latest 10 - 25 hz
 		time.Sleep(55 * time.Millisecond)
 
-		if read_counter % 2000 == 0{
+		if read_counter%2000 == 0 {
 			fmt.Print(read_counter, " ")
 			//os.Exit(0)
 		}
