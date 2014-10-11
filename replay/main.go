@@ -92,7 +92,7 @@ func main() {
 	magic := []byte("SFGF")
 
 	// timer for 10-25Hz
-	ticker := time.Tick(55 * time.Millisecond)
+	ticker := time.Tick(500 * time.Millisecond)
 
 	// loop forever, currently till eof or intentional crash
 	for {
