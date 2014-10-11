@@ -96,6 +96,7 @@ func main() {
 				logger.Println("EOF: ", err)
 				return
 			}
+			logger.Println("error while reading ", err)
 		}
 		read_counter += 1
 
