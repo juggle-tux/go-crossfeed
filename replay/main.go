@@ -56,24 +56,24 @@ func main() {
 	logger := log.New(os.Stderr, "LOG: ", log.Lshortfile)
 
 	// Check cf.log file exists
-	if _, err_file := os.Stat(*ifile); os.IsNotExist(err_file) {
+	if _, err := os.Stat(*ifile); os.IsNotExist(err) {
 		logger.Printf("No such file or directory: %s", *ifile)
 		return
 	}
 
 	// Open cf.log file
-	file, err_open := os.Open(*ifile)
-	if err_open != nil {
-		logger.Println("Failed open cflog: ", err_open)
+	file, err := os.Open(*ifile)
+	if err != nil {
+		logger.Println("Failed open cflog: ", err)
 		return
 	}
 	defer file.Close()
 
 	// Create UDP socket
 	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	conn, err_conn := net.Dial("udp4", addr_str)
-	if err_conn != nil {
-		logger.Println("Fail UDP Connection", err_conn)
+	conn, err := net.Dial("udp4", addr_str)
+	if err != nil {
+		logger.Println("Fail UDP Connection", err)
 		return
 	}
 
