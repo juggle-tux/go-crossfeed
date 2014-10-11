@@ -86,6 +86,9 @@ func main() {
 	// magic
 	magic := []byte("SFGF")
 
+	// timer for 10-25Hz
+	ticker := time.Tick(55 * time.Millisecond)
+
 	// loop forever, currently till eof or intentional crash
 	for {
 
@@ -121,6 +124,7 @@ func main() {
 		packet_start := 0
 		for i := 4; i < len(bits)-4; i++ {
 			if bits[i] == magic[0] && bytes.Equal(bits[i:i+4], magic) {
+				<-ticker
 				_, err := conn.Write(bits[packet_start:i])
 				if err != nil {
 					logger.Println(err)
@@ -129,8 +133,6 @@ func main() {
 				packet_start = i
 			}
 		}
-		// hack for now, latest 10 - 25 hz
-		time.Sleep(55 * time.Millisecond)
 
 		if read_counter%2000 == 0 {
 			fmt.Print(read_counter, " ")
