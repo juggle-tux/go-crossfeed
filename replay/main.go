@@ -56,24 +56,24 @@ func main() {
 	logger := log.New(os.Stderr, "LOG: ", log.Lshortfile)
 
 	// Check cf.log file exists
-	if _, err_file := os.Stat(*ifile); os.IsNotExist(err_file) {
+	if _, err := os.Stat(*ifile); os.IsNotExist(err) {
 		logger.Printf("No such file or directory: %s", *ifile)
 		return
 	}
 
 	// Open cf.log file
-	file, err_open := os.Open(*ifile)
-	if err_open != nil {
-		logger.Println("Failed open cflog: ", err_open)
+	file, err := os.Open(*ifile)
+	if err != nil {
+		logger.Println("Failed open cflog: ", err)
 		return
 	}
 	defer file.Close()
 
 	// Create UDP socket
 	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	conn, err_conn := net.Dial("udp4", addr_str)
-	if err_conn != nil {
-		logger.Println("Fail UDP Connection", err_conn)
+	conn, err := net.Dial("udp4", addr_str)
+	if err != nil {
+		logger.Println("Fail UDP Connection", err)
 		return
 	}
 
@@ -84,10 +84,10 @@ func main() {
 	packets := 0                 // packets processed
 
 	// magic
-	Fb := byte('F') // F,G,S as a bytes (later maybe we can compare all four chars)
-	Gb := byte('G')
-	Sb := byte('S')
 	magic := []byte("SFGF")
+
+	// timer for 10-25Hz
+	ticker := time.Tick(55 * time.Millisecond)
 
 	// loop forever, currently till eof or intentional crash
 	for {
@@ -99,6 +99,7 @@ func main() {
 				logger.Println("EOF: ", err)
 				return
 			}
+			logger.Println("error while reading ", err)
 		}
 		read_counter += 1
 
@@ -122,18 +123,16 @@ func main() {
 		// loops the bits, finding magic
 		packet_start := 0
 		for i := 4; i < len(bits)-4; i++ {
-			// There must be a better way !!
-			if bits[i] == Sb && bits[i+1] == Fb && bits[i+2] == Gb && bits[i+3] == Fb {
-				_, errw := conn.Write(bits[packet_start:i])
-				if errw != nil {
-					logger.Println(errw)
+			if bits[i] == magic[0] && bytes.Equal(bits[i:i+4], magic) {
+				<-ticker
+				_, err := conn.Write(bits[packet_start:i])
+				if err != nil {
+					logger.Println(err)
 				}
 				packets += 1
 				packet_start = i
 			}
 		}
-		// hack for now, latest 10 - 25 hz
-		time.Sleep(55 * time.Millisecond)
 
 		if read_counter%2000 == 0 {
 			fmt.Print(read_counter, " ")
