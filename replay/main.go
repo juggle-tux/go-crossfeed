@@ -120,7 +120,7 @@ func main() {
 		// loops the bits, finding magic
 		packet_start := 0
 		for i := 4; i < len(bits)-4; i++ {
-			if bytes.Equal(bits[i:i+4], magic) {
+			if bytes.Equal(bits[i:i+3], magic) {
 				_, err := conn.Write(bits[packet_start:i])
 				if err != nil {
 					logger.Println(err)
