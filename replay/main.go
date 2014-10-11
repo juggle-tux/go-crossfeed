@@ -84,9 +84,6 @@ func main() {
 	packets := 0                 // packets processed
 
 	// magic
-	Fb := byte('F') // F,G,S as a bytes (later maybe we can compare all four chars)
-	Gb := byte('G')
-	Sb := byte('S')
 	magic := []byte("SFGF")
 
 	// loop forever, currently till eof or intentional crash
@@ -122,11 +119,10 @@ func main() {
 		// loops the bits, finding magic
 		packet_start := 0
 		for i := 4; i < len(bits)-4; i++ {
-			// There must be a better way !!
-			if bits[i] == Sb && bits[i+1] == Fb && bits[i+2] == Gb && bits[i+3] == Fb {
-				_, errw := conn.Write(bits[packet_start:i])
-				if errw != nil {
-					logger.Println(errw)
+			if bytes.HasPrefix(bits, magic) {
+				_, err := conn.Write(bits[packet_start:i])
+				if err != nil {
+					logger.Println(err)
 				}
 				packets += 1
 				packet_start = i
