@@ -1,8 +1,9 @@
 /*
-This reads an UDP dump of flightear multiplayer data,
-and replays it out to an UDP socket
-
-The packets are start with the "magic"
+This reads an UDP huge dump of flightear multiplayer data,
+and replays it out to an UDP socket.
+- A snipped (100k) test file is at stuff/cf_test.log
+- Original (132mb) at  http://geoffair.org/tmp/cf_raw01.zip
+The packets all start with the "magic"
 `SFGF` ie FGFS (Flight Gear Flight Simulator).
 
 The raw log was written packet
@@ -26,6 +27,10 @@ so maybe there isa  better way..
 Needs to "transmit" at 10 - 25 hz per packet
 
 */
+/* thanks to:
+ geoffmcl@github - for being an expert in FlightGear
+ juggle-tux@github - for golang help
+ */
 package main
 
 import (
@@ -44,7 +49,7 @@ func main() {
 	// Args"
 	var ihelp *bool = flag.Bool("h", false, "Show Help")
 	var iport *int = flag.Int("p", 3333, "UDP Transmit port")
-	var ifile *string = flag.String("l", "./cf_raw.log", "Path to raw log file")
+	var ifile *string = flag.String("l", "../stuff/cf_test.log", "Path to raw log file")
 
 	flag.Parse()
 	if *ihelp {
@@ -53,7 +58,7 @@ func main() {
 	}
 
 	// Setup logger
-	logger := log.New(os.Stderr, "LOG: ", log.Lshortfile)
+	logger := log.New(os.Stderr, "Replay: ", log.Lshortfile)
 
 	// Check cf.log file exists
 	if _, err := os.Stat(*ifile); os.IsNotExist(err) {
@@ -71,7 +76,7 @@ func main() {
 
 	// Create UDP socket
 	addr_str := fmt.Sprintf("127.0.0.1:%d", *iport)
-	conn, err := net.Dial("udp4", addr_str)
+	sock, err := net.Dial("udp4", addr_str)
 	if err != nil {
 		logger.Println("Fail UDP Connection", err)
 		return
@@ -125,12 +130,13 @@ func main() {
 		for i := 4; i < len(bits)-4; i++ {
 			if bits[i] == magic[0] && bytes.Equal(bits[i:i+4], magic) {
 				<-ticker
-				_, err := conn.Write(bits[packet_start:i])
+				_, err := sock.Write(bits[packet_start:i])
 				if err != nil {
 					logger.Println(err)
 				}
 				packets += 1
 				packet_start = i
+				logger.Println(packets)
 			}
 		}
 
