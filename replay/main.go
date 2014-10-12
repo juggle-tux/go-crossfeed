@@ -42,6 +42,8 @@ import (
 	"net"
 	"os"
 	"time"
+
+	"github.com/FreeFlightSim/go-crossfeed/message"
 )
 
 func main() {
@@ -132,6 +134,13 @@ func main() {
 		for i := 4; i < len(bits)-4; i++ {
 			if bits[i] == magic[0] && bytes.Equal(bits[i:i+4], magic) {
 				<-ticker
+				packet, errp := message.Decode(bits[packet_start:i])
+				if errp != nil {
+					//fmt.Println(packet, errp, packet.Id)
+					if packet.Id == message.POS_DATA_ID {
+
+					}
+				}
 				_, err := sock.Write(bits[packet_start:i])
 				if err != nil {
 					logger.Println(err)
