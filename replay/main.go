@@ -136,10 +136,12 @@ func main() {
 				<-ticker
 				packet, errp := message.Decode(bits[packet_start:i])
 				if errp != nil {
-					//fmt.Println(packet, errp, packet.Id)
-					if packet.Id == message.POS_DATA_ID {
+					fmt.Println(errp)
+				}else if (1 == 2) {
+					fmt.Println("DECO+", packet, errp, packet.Type)
+					//if packet.Id == message.POS_DATA_ID {
 
-					}
+					//}
 				}
 				_, err := sock.Write(bits[packet_start:i])
 				if err != nil {
