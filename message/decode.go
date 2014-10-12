@@ -36,6 +36,6 @@ func Decode(bits []byte)(HeaderMsg, error) {
 	if err != nil {
 		fmt.Println(rembits)
 	}
-	fmt.Println(position.Model(), err)
+	fmt.Println(position.Model(), position.Time, err)
 	return header, nil
 }
