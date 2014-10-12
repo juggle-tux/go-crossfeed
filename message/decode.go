@@ -33,7 +33,7 @@ func Decode(xdr_enc []byte)(HeaderMsg, error) {
 	}
 	//fmt.Println("remain=", len(remainingBytes))
 	//fmt.Println( header.Magic == MSG_MAGIC, header.Version ==  PROTOCOL_VER)
-	fmt.Println ("Header=", len(remainingBytes), header.Type, header.Type == TYPE_POS, header.Version, header.Callsign(), )
+	//fmt.Println ("Header=", len(remainingBytes), header.Type, header.Type == TYPE_POS, header.Version, header.Callsign(), )
 
 	if header.Version != PROTOCOL_VER {
 		return header, errors.New("Invalid protocol version")
@@ -47,8 +47,8 @@ func Decode(xdr_enc []byte)(HeaderMsg, error) {
 	if err != nil {
 		fmt.Println(rembits)
 	}
-	t := time.Unix(0, int64(position.Time) * int64(time.Nanosecond))
-	//t2 := time.Unix(int64(position.Time), 0)
-	fmt.Println(position.Model(), position.Time, ">>", t, err)
+	t := time.Unix(0, int64(position.Time) * int64(time.Nanosecond) ).UTC()
+	t2 := time.Unix(0, int64(position.Time) * int64(time.Millisecond))
+	fmt.Println( position.Lag, position.Time, ">>", t, "==", t2, header.Callsign(), ":", len(rembits) )
 	return header, nil
 }
