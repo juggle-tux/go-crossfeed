@@ -49,6 +49,8 @@ func Decode(xdr_enc []byte)(HeaderMsg, error) {
 	}
 	t := time.Unix(0, int64(position.Time) * int64(time.Nanosecond) ).UTC()
 	t2 := time.Unix(0, int64(position.Time) * int64(time.Millisecond))
-	fmt.Println( position.Lag, position.Time, ">>", t, "==", t2, header.Callsign(), ":", len(rembits) )
+	if 1 == 2 {
+		fmt.Println(position.Lag, position.Time, ">>", t, "==", t2, header.Callsign(), ":", len(rembits))
+	}
 	return header, nil
 }
