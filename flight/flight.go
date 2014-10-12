@@ -1,11 +1,15 @@
 
 package flight
 
+import (
+
+)
+
 type Flight struct {
 
 
 	//Origin string
-	Address *net.UDPAddr
+	//Address *net.UDPAddr
 	//Conn *net.UDPConn
 
 	Callsign string // But this is also key so maybe unneeded ?

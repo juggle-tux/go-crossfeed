@@ -2,20 +2,31 @@
 package message
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/davecgh/go-xdr/xdr"
 )
 
 
+func msToTime(ms string) (time.Time, error) {
+	msInt, err := strconv.ParseInt(ms, 10, 64)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Unix(0, msInt*int64(time.Millisecond)), nil
+}
 
 
-func Decode(bits []byte)(HeaderMsg, error) {
+// Decode the XDR packet
+func Decode(xdr_enc []byte)(HeaderMsg, error) {
 
 	var header HeaderMsg
 
-	remainingBytes, err := xdr.Unmarshal(bits, &header)
+	remainingBytes, err := xdr.Unmarshal(xdr_enc, &header)
 	if err != nil{
 		fmt.Println("XDR Decode Error", err)
 		return header, nil
@@ -36,6 +47,8 @@ func Decode(bits []byte)(HeaderMsg, error) {
 	if err != nil {
 		fmt.Println(rembits)
 	}
-	fmt.Println(position.Model(), position.Time, err)
+	t := time.Unix(0, int64(position.Time) * int64(time.Nanosecond))
+	//t2 := time.Unix(int64(position.Time), 0)
+	fmt.Println(position.Model(), position.Time, ">>", t, err)
 	return header, nil
 }
