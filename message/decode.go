@@ -11,9 +11,9 @@ import (
 
 
 
-func Decode(bits []byte)(Header, error) {
+func Decode(bits []byte)(HeaderMsg, error) {
 
-	var header Header
+	var header HeaderMsg
 
 	remainingBytes, err := xdr.Unmarshal(bits, &header)
 	if err != nil{
@@ -30,12 +30,12 @@ func Decode(bits []byte)(Header, error) {
 	if header.Type != TYPE_POS {
 		return header, errors.New("Not a position error")
 	}
-	var tt uint64
-	rembits, err := xdr.Unmarshal(remainingBytes, &tt)
-	fmt.Println(tt, err)
+	var position PositionMsg
+	rembits, err := xdr.Unmarshal(remainingBytes, &position)
+
 	if err != nil {
 		fmt.Println(rembits)
 	}
-
+	fmt.Println(position.Model(), err)
 	return header, nil
 }

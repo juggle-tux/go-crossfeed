@@ -12,11 +12,11 @@ package message
 		This caused a clash with Point3D which needs to be either 32 or 64
 		- For now the 32's are converted to 64's
 */
-type T_PositionMsg struct{
+type PositionMsg struct{
 
 	/// Name of the aircraft model
 	// - char Model[MAX_MODEL_NAME_LEN];
-	Model [MAX_MODEL_NAME_LEN]byte
+	ModelBytes [MAX_MODEL_NAME_LEN]byte
 
 	// Time when this packet was generated
 	// - xdr_data2_t time;
@@ -54,14 +54,8 @@ type T_PositionMsg struct{
 }
 
 // Returns the Model as a string
-// - TODO There has Got to be a better way
-func (me *T_PositionMsg) ModelString() string{
-	s := ""
-	for _, ele := range me.Model {
-		if ele == 0 {
-			return s
-		}
-		s += string(ele)
-	}
-	return s
+
+func (me *PositionMsg) Model() string{
+	return string(me.ModelBytes[:])
+
 }

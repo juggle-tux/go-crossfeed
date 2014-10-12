@@ -1,7 +1,7 @@
 
 package message
 
-type Header struct {
+type HeaderMsg struct {
 
 	// Magic Value
 	Magic uint32 //xdr_data_t
@@ -26,6 +26,6 @@ type Header struct {
 }
 
 // returns Callsign as string
-func (me *Header) Callsign() string{
+func (me *HeaderMsg) Callsign() string{
 	return string(me.CallsignBytes[:])
 }
