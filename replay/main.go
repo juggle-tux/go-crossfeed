@@ -50,7 +50,7 @@ func main() {
 	var ihelp *bool = flag.Bool("h", false, "Show Help")
 	var iport *int = flag.Int("p", 3333, "UDP Transmit port")
 	var ifile *string = flag.String("l", "../stuff/cf_test.log", "Path to raw log file")
-
+	var ihz *int = flag.Int("z", 10, "Hz to transmit")
 	flag.Parse()
 	if *ihelp {
 		flag.Usage()
@@ -92,7 +92,9 @@ func main() {
 	magic := []byte("SFGF")
 
 	// timer for 10-25Hz
-	ticker := time.Tick(500 * time.Millisecond)
+	pulse := int64(1000 / *ihz)
+	ticker := time.Tick(time.Duration(pulse) * time.Millisecond)
+
 
 	// loop forever, currently till eof or intentional crash
 	for {
