@@ -92,8 +92,8 @@ func main() {
 	magic := []byte("SFGF")
 
 	// timer for 10-25Hz
-	pulse := int64(1000 / *ihz)
-	ticker := time.Tick(time.Duration(pulse) * time.Millisecond)
+	var pulse time.Duration = time.Duration(int64(1000 / *ihz)) * time.Millisecond
+	ticker := time.Tick(pulse)
 
 
 	// loop forever, currently till eof or intentional crash
@@ -110,7 +110,7 @@ func main() {
 		}
 		read_counter += 1
 
-		// append the buffer to existing data ([] at first loop)
+		// append the buffer to existing/remainder data ([] at first loop)
 		data = append(data, buffer[:n]...)
 
 		// find first and last magic  'SFGF'
