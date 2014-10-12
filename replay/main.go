@@ -28,13 +28,14 @@ Needs to "transmit" at 10 - 25 hz per packet
 
 */
 /* thanks to:
- geoffmcl@github - for being an expert in FlightGear
- juggle-tux@github - for golang help
- */
+geoffmcl@github - for being an expert in FlightGear
+juggle-tux@github - for golang help
+*/
 package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -46,12 +47,44 @@ import (
 	"github.com/FreeFlightSim/go-crossfeed/message"
 )
 
+var ErrNoFiles = errors.New("no more files")
+
+type fileList struct {
+	l   []string
+	pos int
+}
+
+// Check that all file exists
+func (list *fileList) check() error {
+	for _, file := range list.l {
+		_, err := os.Stat(file)
+		if os.IsNotExist(err) {
+			return errors.New(
+				fmt.Sprintf("No such file or directory: %s", file),
+			)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// open the next file don't forget to close the old one
+func (list *fileList) openNext() (*os.File, error) {
+	if list.pos >= len(list.l) {
+		return nil, ErrNoFiles
+	}
+	file, err := os.Open(list.l[list.pos])
+	list.pos++
+	return file, err
+}
+
 func main() {
 
 	// Args"
 	var ihelp *bool = flag.Bool("h", false, "Show Help")
 	var iport *int = flag.Int("p", 3333, "UDP Transmit port")
-	var ifile *string = flag.String("l", "../stuff/cf_test.log", "Path to raw log file")
 	var ihz *int = flag.Int("z", 10, "Hz to transmit")
 	flag.Parse()
 	if *ihelp {
@@ -62,14 +95,14 @@ func main() {
 	// Setup logger
 	logger := log.New(os.Stderr, "Replay: ", log.Lshortfile)
 
-	// Check cf.log file exists
-	if _, err := os.Stat(*ifile); os.IsNotExist(err) {
-		logger.Printf("No such file or directory: %s", *ifile)
-		return
+	// check that all file exist
+	flist := fileList{l: flag.Args()}
+	if err := flist.check(); err != nil {
+		logger.Fatal(err)
 	}
 
 	// Open cf.log file
-	file, err := os.Open(*ifile)
+	file, err := flist.openNext()
 	if err != nil {
 		logger.Println("Failed open cflog: ", err)
 		return
@@ -97,7 +130,6 @@ func main() {
 	var pulse time.Duration = time.Duration(int64(1000 / *ihz)) * time.Millisecond
 	ticker := time.Tick(pulse)
 
-
 	// loop forever, currently till eof or intentional crash
 	for {
 
@@ -106,7 +138,17 @@ func main() {
 		if err != nil {
 			if err == io.EOF {
 				logger.Println("EOF: ", err)
-				return
+				file.Close()
+				file, err = flist.openNext()
+				if err != nil {
+					logger.Println(err)
+					return
+				}
+				n, err = file.Read(buffer)
+				if err != nil {
+					logger.Println("error while reading ", err)
+					return
+				}
 			}
 			logger.Println("error while reading ", err)
 		}
@@ -137,7 +179,7 @@ func main() {
 				packet, errp := message.Decode(bits[packet_start:i])
 				if errp != nil {
 					fmt.Println(errp)
-				}else if (1 == 2) {
+				} else if 1 == 2 {
 					fmt.Println("DECO+", packet, errp, packet.Type)
 					//if packet.Id == message.POS_DATA_ID {
 
