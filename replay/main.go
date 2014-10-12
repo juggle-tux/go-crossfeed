@@ -191,7 +191,7 @@ func main() {
 				}
 				packets += 1
 				packet_start = i
-				logger.Println(packets)
+				//logger.Println(packets)
 			}
 		}
 
