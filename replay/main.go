@@ -81,13 +81,16 @@ func (list *fileList) openNext() (*os.File, error) {
 }
 
 func main() {
-
 	// Args"
 	var ihelp *bool = flag.Bool("h", false, "Show Help")
 	var iport *int = flag.Int("p", 3333, "UDP Transmit port")
 	var ihz *int = flag.Int("z", 10, "Hz to transmit")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage of %s [option] file1 file2 ...\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 	flag.Parse()
-	if *ihelp {
+	if *ihelp || len(flag.Args()) == 0 {
 		flag.Usage()
 		os.Exit(0)
 	}
@@ -104,7 +107,7 @@ func main() {
 	// Open cf.log file
 	file, err := flist.openNext()
 	if err != nil {
-		logger.Println("Failed open cflog: ", err)
+		logger.Println("Failed to open:", err)
 		return
 	}
 	defer file.Close()
