@@ -152,8 +152,9 @@ func main() {
 					logger.Println("error while reading ", err)
 					return
 				}
+			} else {
+				logger.Println("error while reading ", err)
 			}
-			logger.Println("error while reading ", err)
 		}
 		read_counter += 1
 
